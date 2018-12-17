@@ -1,0 +1,38 @@
+<resources>
+    <string name="app_name">ExJournal</string>
+    <string name="action_settings">Settings</string>
+    <string name="journals">Journals</string>
+    <string name="training">Trainings</string>
+    <string name="title_activity_training">Journal/</string>
+
+    <string name="journal_title">Add new Journal</string>
+    <string name="dialog_training_title">Add new Set</string>
+    <string name="journal_name">Journal name</string>
+    <string name="button_save">Save</string>
+    <string name="button_cancel">Cancel</string>
+    <string name="button_delete">Delete</string>
+    <string name="history">History</string>
+    <string name="to_day">To Day</string>
+    <string name="number">number</string>
+    <string name="time12">12:00</string>
+    <string name="total">Total</string>
+
+    <string name="menu_item1">Add journal</string>
+    <string name="menu_item2">Rename journal</string>
+    <string name="menu_item3">Delete journal</string>
+
+    <string name="question_delete">Delete item</string>
+
+    <string-array name="jour_names">
+        <item>Push UPS</item>
+        <item>Pull UPS</item>
+        <item>Squats</item>
+    </string-array>
+
+    <!-- Для рекламы AdMob -->
+    <string name="admob_appid" translatable="false">ca-app-pub-1447571314842399~5006960152</string>
+    <string name="banner_journals_activity" translatable="false">ca-app-pub-1447571314842399/5546974060</string>
+    <string name="banner_training_activity" translatable="false">ca-app-pub-1447571314842399/5546974060</string>
+    <string name="test_banner" translatable="false">ca-app-pub-3940256099942544/6300978111</string>
+
+</resources>

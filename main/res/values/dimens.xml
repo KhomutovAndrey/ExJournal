@@ -1,0 +1,8 @@
+<resources>
+    <dimen name="fab_margin">16dp</dimen>
+    <dimen name="rad">5dp</dimen>
+    <dimen name="journal_card_heigh">60dp</dimen>
+    <dimen name="padding">10dp</dimen>
+    <dimen name="padding_list">35dp</dimen>
+    <dimen name="historycard_h">150dp</dimen>
+</resources>

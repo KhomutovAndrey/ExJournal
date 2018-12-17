@@ -1,0 +1,31 @@
+<resources>
+    <string name="app_name">Журнал тренировок</string>
+    <string name="action_settings">Настройки</string>
+    <string name="journals">Журналы</string>
+    <string name="training">Тренировки</string>
+    <string name="title_activity_training">Журнал/</string>
+
+    <string name="journal_title">Добавить новый журнал</string>
+    <string name="dialog_training_title">Добавить новый подход</string>
+    <string name="journal_name">Название журнала</string>
+    <string name="button_save">Сохранить</string>
+    <string name="button_cancel">Отменить</string>
+    <string name="button_delete">Удалить</string>
+    <string name="history">История</string>
+    <string name="to_day">Сегодня</string>
+    <string name="number">количество</string>
+    <string name="time12">12:00</string>
+    <string name="total">Всего</string>
+
+    <string name="menu_item1">Добавить</string>
+    <string name="menu_item2">Переименовать</string>
+    <string name="menu_item3">Удалить</string>
+
+    <string name="question_delete">Удалить элемент</string>
+
+    <string-array name="jour_names">
+        <item>Отжимания</item>
+        <item>Подтягивания</item>
+        <item>Приседания</item>
+    </string-array>
+</resources>

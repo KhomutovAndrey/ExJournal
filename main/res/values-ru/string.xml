@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Журнал тренировок</string>
+    <string name="action_settings">Настройки</string>
+    <string name="jour_names">Журналы</string>
+
+    <string name="jour_name1">Отжимания</string>
+    <string name="jour_name2">Подтягивания</string>
+    <string name="jour_name3">Приседания</string>
+</resources>
