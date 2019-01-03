@@ -11,6 +11,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -47,6 +50,8 @@ public class TrainingActivity extends AppCompatActivity
     ToDayFragment zfragment;
     HistoryFragment hfragment;
     private TextView tvJournalName;
+    private ImageButton targetButton; // Кнопка обработки редактирования и сохранения цели
+    private boolean targetFlag=false; // Флаг состояния доступности для редактирования панели Цели
     private String sDate; // Текущая дата в текстовом формате гггг.мм.дд - для фрмирования списка подходов за сегодня(наполнение списка первой вкладки)
     private String TAG="Testfragment";
     private FirebaseAnalytics mFirebaseAnalytics;
@@ -64,7 +69,6 @@ public class TrainingActivity extends AppCompatActivity
             @Override
             public void onClick(View view) {
                 actionAdd(null);
-                //zfragment.actionAdd(null);
             }
         });
 
@@ -78,6 +82,13 @@ public class TrainingActivity extends AppCompatActivity
         tvJournalName = (TextView)findViewById(R.id.tvJournalName);
         tabLayout = (TabLayout)findViewById(R.id.tabLayout);
         viewPager = (ViewPager)findViewById(R.id.viewPager);
+        targetButton = (ImageButton)findViewById(R.id.targetButton);
+        targetButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                targetClick();
+            }
+        });
 
         controller = new SQLiteController(this);
 
@@ -96,6 +107,24 @@ public class TrainingActivity extends AppCompatActivity
         Bundle bundle = new Bundle();
         bundle.putString(FirebaseAnalytics.Param.ITEM_ID, this.getTitle().toString());
         mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
+    }
+
+    private void targetClick() {
+        RadioButton rb1 = (RadioButton)findViewById(R.id.radioButton);
+        RadioButton rb2 = (RadioButton)findViewById(R.id.radioButton2);
+        EditText etTarget = (EditText)findViewById(R.id.etTarget);
+        targetFlag = !targetFlag;
+        rb1.setEnabled(targetFlag);
+        rb2.setEnabled(targetFlag);
+        etTarget.setEnabled(targetFlag);
+        if (targetFlag){// Разрешено редактирование
+            targetButton.setImageResource(android.R.drawable.ic_menu_save);
+            //TODO: получить значения цели и заполнить RadioGroup, EditText
+        }else{// Запрещено редактирование
+            targetButton.setImageResource(android.R.drawable.ic_menu_edit);
+            //TODO: сохранить значения цели
+        }
+
     }
 
     @Override
@@ -124,6 +153,15 @@ public class TrainingActivity extends AppCompatActivity
 
     private void initData(){
         Log.d(TAG,"Activity-initData:");
+        // Настраиваем вид панели с целью
+        targetFlag = false;
+        RadioButton rb1 = (RadioButton)findViewById(R.id.radioButton);
+        RadioButton rb2 = (RadioButton)findViewById(R.id.radioButton2);
+        rb1.setEnabled(targetFlag);
+        rb2.setEnabled(targetFlag);
+        EditText etTarget = (EditText)findViewById(R.id.etTarget);
+        etTarget.setEnabled(targetFlag);
+
         // Получаем журнал
         journal = controller.getJournal(idJournal);
         String title = getString(R.string.title_activity_training)+journal.getName();
@@ -146,8 +184,6 @@ public class TrainingActivity extends AppCompatActivity
             //hfragment.setData(groupZapisArray);
             pagerAdapter.addFragment(hfragment, getString(R.string.history));
         }
-        //pagerAdapter.addFragment(zfragment, getString(R.string.to_day));
-        //pagerAdapter.addFragment(hfragment, getString(R.string.history));
         viewPager.setAdapter(pagerAdapter);
         tabLayout.setupWithViewPager(viewPager);
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
@@ -173,6 +209,7 @@ public class TrainingActivity extends AppCompatActivity
 
             }
         });
+        //TODO: Заполняем данными панель Цели
     }
 
 
@@ -263,5 +300,7 @@ public class TrainingActivity extends AppCompatActivity
     public void onClick(View v, int i, Zapis element) {
 
     }
+
+
 
 }
