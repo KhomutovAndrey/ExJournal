@@ -34,6 +34,52 @@
         ads:adSize="BANNER"
         app:adUnitId="@string/banner_training_activity"/>
 
+    <android.support.v7.widget.CardView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_margin="@dimen/rad"
+        app:cardCornerRadius="@dimen/rad">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical|fill_horizontal"
+            android:orientation="horizontal"
+            android:padding="@dimen/rad">
+
+            <TextView
+                android:id="@+id/textView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:drawableBottom="@android:drawable/ic_menu_mylocation"
+                android:text="@string/target" />
+
+            <RadioGroup
+                android:id="@+id/rgTarget"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent">
+
+            </RadioGroup>
+
+            <EditText
+                android:id="@+id/etTarget"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ems="2"
+                android:enabled="false"
+                android:inputType="number" />
+
+            <ImageButton
+                android:id="@+id/targetButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:srcCompat="@android:drawable/ic_menu_edit" />
+
+        </LinearLayout>
+
+    </android.support.v7.widget.CardView>
+
     <android.support.design.widget.TabLayout
         android:id="@+id/tabLayout"
         android:layout_width="match_parent"

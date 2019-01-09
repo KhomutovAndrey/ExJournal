@@ -17,6 +17,10 @@
     <string name="time12">12:00</string>
     <string name="total">Всего</string>
 
+    <string name="total_set_day">Всего подходов / день</string>
+    <string name="total_rep_day">Количество раз / день</string>
+    <string name="target">Цель:</string>
+
     <string name="menu_item1">Добавить</string>
     <string name="menu_item2">Переименовать</string>
     <string name="menu_item3">Удалить</string>
