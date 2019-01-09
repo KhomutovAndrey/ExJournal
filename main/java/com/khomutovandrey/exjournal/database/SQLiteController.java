@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 
 import com.khomutovandrey.exjournal.entry.Journal;
+import com.khomutovandrey.exjournal.entry.Target;
 import com.khomutovandrey.exjournal.entry.Zapis;
 
 import java.util.ArrayList;
@@ -114,6 +115,45 @@ public class SQLiteController implements Controller{
     @Override
     public long editZapis(int count, String sTime) {
         return 0;
+    }
+
+    /**
+     * Возвращает список названий типов Целей
+     * @return
+     */
+    @Override
+    public ArrayList<String> getTypeTarget() {
+        ArrayList<String> result = new ArrayList<String>();
+        ArrayList<ContentValues> types = db.getTypeTarget();
+        for (ContentValues value: types) {
+            result.add(value.getAsString("name"));
+        }
+        return result;
+    }
+
+    @Override
+    public Target getTargetByJournal(long id_journal) {
+        ContentValues values = db.getTargetByJournal(id_journal);
+        long id;
+        if(values.getAsLong("id")!=null){
+            id = values.getAsLong("id");
+        }else id=-1;
+        int count;
+        if(values.getAsInteger("count")!=null){
+            count = values.getAsInteger("count");
+        }else count=0;
+        String name = values.getAsString("typeName");
+        long id_jour;
+        if(values.getAsLong("id_jour")!=null){
+            id_jour = values.getAsLong("id_jour");
+        }else id_jour = -1;
+        Target target = new Target(id, name, count, id_jour);
+        return target;
+    }
+
+    @Override
+    public long saveTarget(Target target) {
+        return db.saveTarget(target);
     }
 
     @Override

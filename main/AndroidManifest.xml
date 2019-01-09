@@ -27,6 +27,7 @@
         <activity
             android:name=".TrainingActivity"
             android:label="@string/title_activity_training"
+            android:windowSoftInputMode="stateHidden"
             android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 

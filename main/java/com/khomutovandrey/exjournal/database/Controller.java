@@ -3,6 +3,7 @@ package com.khomutovandrey.exjournal.database;
 import android.content.ContentValues;
 
 import com.khomutovandrey.exjournal.entry.Journal;
+import com.khomutovandrey.exjournal.entry.Target;
 import com.khomutovandrey.exjournal.entry.Zapis;
 
 import java.util.ArrayList;
@@ -70,6 +71,24 @@ public interface Controller {
     public long deleteZapis(long id);
 
     public long editZapis(int count, String sTime);
+
+    /**
+     * Возвращает список названий типов Целей
+     * @return
+     */
+    public ArrayList<String> getTypeTarget();
+
+    /**
+     * Возвращает объект Цель
+     * @return Target
+     */
+    public Target getTargetByJournal(long id_journal);
+
+    /**
+     * Сохраняет Цель в хранилище, т.к. цель только одна, то, по сути обновляет запись в хранилище
+     * @return Идентификатор сохранённой Цели
+     */
+    public long saveTarget(Target taarget);
 
     //Закрывает обращение к источнику данных
     public void close();

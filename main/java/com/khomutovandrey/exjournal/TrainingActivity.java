@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.DialogFragment;
-import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -14,8 +13,8 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
@@ -23,6 +22,7 @@ import com.google.android.gms.ads.MobileAds;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.khomutovandrey.exjournal.database.SQLiteController;
 import com.khomutovandrey.exjournal.entry.Journal;
+import com.khomutovandrey.exjournal.entry.Target;
 import com.khomutovandrey.exjournal.entry.Zapis;
 import com.khomutovandrey.exjournal.tabs.HistoryFragment;
 import com.khomutovandrey.exjournal.tabs.ToDayFragment;
@@ -41,6 +41,7 @@ public class TrainingActivity extends AppCompatActivity
     public final static String JournalId="id";
     private long idJournal=-1;
     private Journal journal;
+    private Target target;
     private SQLiteController controller;
     ArrayList<Zapis> zapisArray;
     ArrayList<ArrayList<Zapis>> groupZapisArray;
@@ -109,23 +110,6 @@ public class TrainingActivity extends AppCompatActivity
         mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
     }
 
-    private void targetClick() {
-        RadioButton rb1 = (RadioButton)findViewById(R.id.radioButton);
-        RadioButton rb2 = (RadioButton)findViewById(R.id.radioButton2);
-        EditText etTarget = (EditText)findViewById(R.id.etTarget);
-        targetFlag = !targetFlag;
-        rb1.setEnabled(targetFlag);
-        rb2.setEnabled(targetFlag);
-        etTarget.setEnabled(targetFlag);
-        if (targetFlag){// Разрешено редактирование
-            targetButton.setImageResource(android.R.drawable.ic_menu_save);
-            //TODO: получить значения цели и заполнить RadioGroup, EditText
-        }else{// Запрещено редактирование
-            targetButton.setImageResource(android.R.drawable.ic_menu_edit);
-            //TODO: сохранить значения цели
-        }
-
-    }
 
     @Override
     protected void onResume() {
@@ -152,16 +136,7 @@ public class TrainingActivity extends AppCompatActivity
     }
 
     private void initData(){
-        Log.d(TAG,"Activity-initData:");
-        // Настраиваем вид панели с целью
-        targetFlag = false;
-        RadioButton rb1 = (RadioButton)findViewById(R.id.radioButton);
-        RadioButton rb2 = (RadioButton)findViewById(R.id.radioButton2);
-        rb1.setEnabled(targetFlag);
-        rb2.setEnabled(targetFlag);
-        EditText etTarget = (EditText)findViewById(R.id.etTarget);
-        etTarget.setEnabled(targetFlag);
-
+        //Log.d(TAG,"Activity-initData:");
         // Получаем журнал
         journal = controller.getJournal(idJournal);
         String title = getString(R.string.title_activity_training)+journal.getName();
@@ -186,30 +161,68 @@ public class TrainingActivity extends AppCompatActivity
         }
         viewPager.setAdapter(pagerAdapter);
         tabLayout.setupWithViewPager(viewPager);
-        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
-            @Override
-            public void onTabSelected(TabLayout.Tab tab) {
-                if(tab.getPosition()==1){
-                    //groupZapisArray = controller.getGroupZapis(journal.getId());
-                    //hfragment = HistoryFragment.newInstance(groupZapisArray);
 
-                    //pagerAdapter.replaceFragment(1,hfragment,getString(R.string.history));
-                    //pagerAdapter.notifyDataSetChanged();
-                    //viewPager.setAdapter(pagerAdapter);
+        // Настраиваем вид панели с целью
+        targetFlag = false;
+        RadioGroup rgTarget = (RadioGroup)findViewById(R.id.rgTarget);
+        //rgTarget.setEnabled(targetFlag);
+        ArrayList<String> radioList = controller.getTypeTarget();
+        for(String name: radioList){
+            RadioButton rb = new RadioButton(this);
+            rb.setEnabled(targetFlag);
+            rb.setTextSize(10);
+            rb.setText(name);
+            rgTarget.addView(rb);
+        }
+        //Отметить выбранную цель по данным из хранилища
+        target = controller.getTargetByJournal(journal.getId());
+        EditText etTarget = (EditText)findViewById(R.id.etTarget);
+        etTarget.setEnabled(targetFlag);
+        if(target.isInit()){
+            etTarget.setText(String.valueOf(target.getCount()));
+            // Отмечаем соответствующий radioButton
+            RadioButton rb;
+            for (int i = 0; i < rgTarget.getChildCount(); i++){
+                rb = (RadioButton)rgTarget.getChildAt(i);
+                if(rb.getText().equals(target.getName())){
+                    rb.setChecked(true);
+                    break;
                 }
             }
+        }else{//Цель не задана
 
-            @Override
-            public void onTabUnselected(TabLayout.Tab tab) {
+        }
+    }
 
-            }
+    /**
+     * Обработчик нажатия кнопки редактирования цели
+     */
+    private void targetClick() {
+        RadioGroup rgTarget = (RadioGroup)findViewById(R.id.rgTarget);
+        EditText etTarget = (EditText)findViewById(R.id.etTarget);
+        targetFlag = !targetFlag;
+        for (int i=0; i<rgTarget.getChildCount(); i++){
+            rgTarget.getChildAt(i).setEnabled(targetFlag);
+        }
+        etTarget.setEnabled(targetFlag);
+        if (targetFlag){// Разрешено редактирование
+            targetButton.setImageResource(android.R.drawable.ic_menu_save);
+        }else{// Запрещено редактирование, сохраняем параметры Цели
+            targetButton.setImageResource(android.R.drawable.ic_menu_edit);
+            // сохранить значения цели
+            target.setCount(Integer.parseInt(etTarget.getText().toString()));
+            target.setId_jour(journal.getId());
+            if(rgTarget.getCheckedRadioButtonId()==-1){
+                rgTarget.check(0);
+            }// Получаем отмеченный тип цели
+            RadioButton rb = (RadioButton)findViewById(rgTarget.getCheckedRadioButtonId());
+            String s = rb.getText().toString();
+            //RadioButton rb = (RadioButton)rgTarget.getChildAt(rgTarget.getCheckedRadioButtonId());
+            target.setName(rb.getText().toString());
 
-            @Override
-            public void onTabReselected(TabLayout.Tab tab) {
-
-            }
-        });
-        //TODO: Заполняем данными панель Цели
+            // Передаём объект на сохранение
+            controller.saveTarget(target);
+        }
     }
 
 
@@ -300,7 +313,6 @@ public class TrainingActivity extends AppCompatActivity
     public void onClick(View v, int i, Zapis element) {
 
     }
-
 
 
 }

@@ -9,7 +9,9 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.khomutovandrey.exjournal.R;
+import com.khomutovandrey.exjournal.entry.Target;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -17,10 +19,12 @@ import java.util.List;
 
 public class SQLiteDB extends SQLiteOpenHelper {
     Context context;
-    public static final int DATABASE_VERSION = 1;
+    public static final int DATABASE_VERSION = 2;
     public static final String DATABASE_NAME = "ExJournal";
     public static final String TABLE_JOURNAL = "journal";
     public static final String TABLE_ZAPIS = "zapis";
+    public static final String TABLE_TARGET = "target";
+    public static final String TABLE_TARGET_TYPE = "target_type";
     //public static final String TABLE_JOURNAL = "journal";
     SQLiteDatabase db;
 
@@ -68,22 +72,48 @@ public class SQLiteDB extends SQLiteOpenHelper {
          * названия журналов в ресурсах
          */
         this.db = db;
-        db.execSQL("CREATE TABLE " + TABLE_JOURNAL + "(id integer primary key, name text) ");
-        db.execSQL("CREATE TABLE " + TABLE_ZAPIS + "(id integer primary key, id_jour integr, date text, time text, count integer) ");
+        db.execSQL("CREATE TABLE " + TABLE_JOURNAL + "(id integer primary key, name text) ");// Таблица журналов
+        db.execSQL("CREATE TABLE " + TABLE_ZAPIS + "(id integer primary key, id_jour integr, date text, time text, count integer) ");// Таблица упражнений
+        db.execSQL("CREATE TABLE " + TABLE_TARGET_TYPE + "(id integer primary key, name text) ");// Таблица - справочник типов целей
+        db.execSQL("CREATE TABLE " + TABLE_TARGET + "(id integer primary key, id_type integer, count integer, id_jour integr) ");// Таблица целей
 
-        //добавляем стандартные значения
+        //добавляем стандартные значения журналов
         ContentValues values = new ContentValues();
         List<String> names = Arrays.asList(context.getResources().getStringArray(R.array.jour_names));
         for (String name : names) {
             values.put("name", name);
             db.insert(TABLE_JOURNAL, null, values);
         }
-        //insertToJournal(values);
+        //добавляем стандартные значения типов целей
+        values.clear();
+        ArrayList<String> types = new ArrayList<String>();
+        types.add(context.getResources().getString(R.string.total_rep_day));
+        types.add(context.getResources().getString(R.string.total_set_day));
+        for(String type : types){
+            values.put("name", type);
+            db.insert(TABLE_TARGET_TYPE, null, values);
+        }
+
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-
+        switch (newVersion){
+            case 2: // Добавляем таблицу Цель и справочник типов целей
+                this.db = db;
+                db.execSQL("CREATE TABLE " + TABLE_TARGET_TYPE + "(id integer primary key, name text) ");// Таблица - справочник типов целей
+                db.execSQL("CREATE TABLE " + TABLE_TARGET + "(id integer primary key, id_type integer, count integer, id_jour integr) ");// Таблица целей
+                //добавляем стандартные значения типов целей
+                ContentValues values = new ContentValues();
+                ArrayList<String> types = new ArrayList<String>();
+                types.add(context.getResources().getString(R.string.total_rep_day));
+                types.add(context.getResources().getString(R.string.total_set_day));
+                for(String type : types){
+                    values.put("name", type);
+                    db.insert(TABLE_TARGET_TYPE, null, values);
+                }
+                break;
+        }
     }
 
     public long addToJournal(ContentValues values) {
@@ -225,6 +255,101 @@ public class SQLiteDB extends SQLiteOpenHelper {
                 result.add(cursor.getString(0));
             }while (cursor.moveToNext());
         }
+        return result;
+    }
+
+    /**
+     * Возвращает идентификатор и название типа Целей в виде массива, содержащего элементы ContentValues
+     * @return ArrayList<ContentValues> - каждый элемент содержит пару: идентификатор - название типа Цели
+      */
+    public ArrayList<ContentValues> getTypeTarget(){
+        ArrayList<ContentValues> result = new ArrayList<>();
+        ContentValues values;
+        if (db == null) {
+            db = getWritableDatabase();
+        }
+        Cursor cursor = db.query(TABLE_TARGET_TYPE, null, null,null, null, null, null);
+        if(cursor.moveToFirst()){
+            do{
+                values = new ContentValues();
+                values.put("id",cursor.getLong(0));
+                values.put("name", cursor.getString(1));
+                result.add(values);
+            }while (cursor.moveToNext());
+        }
+        return result;
+    }
+
+    /**
+     * Возвращает набор значений Цели  для указанного журнала упражнений
+     * @return ContentValues каждый элемент - пара (ключ-значение) : название поля - значение поля
+     * id - идентификатор цели
+     * id_type - идентификатор типа цели
+     * count - количество выполнений
+     * typeName - название типа цели
+     */
+    public ContentValues getTargetByJournal(long id_journal){
+        if (db == null) {
+            db = getWritableDatabase();
+        }
+        ContentValues values = new ContentValues();
+        // Получаем цель из БД, может быть только одна
+        Cursor cursor = db.query(TABLE_TARGET, null,"id_jour=?",
+                new String[]{String.valueOf(id_journal)},null,null,null,"1");
+        if(cursor.moveToFirst()){
+            do {
+                values.put("id", cursor.getLong(0));
+                values.put("id_type", cursor.getLong(1));
+                values.put("count", cursor.getInt(2));
+                values.put("id_jour", cursor.getLong(3));
+            }while (cursor.moveToNext());
+        }
+        if(values.size()>0){
+            cursor = db.query(TABLE_TARGET_TYPE, new String[]{"name"}, "id=?", new String[]{values.getAsString("id_type")},
+                    null,null,null);
+            if(cursor.moveToFirst()){
+                values.put("typeName", cursor.getString(0));
+            }
+        }
+        return values;
+    }
+
+    // TODO: передавать вместо объекта Target значения полей
+    public long saveTarget(Target target){
+        long result=-1;
+        if (db == null) {
+            db = getWritableDatabase();
+        }
+        // -- Находим идентификатор типа в таблице, если не находится, то добавляем новый тип
+        long id_type = -1; // Идентификатор типа Цели
+        String targetType = target.getName(); // Название типа Цели
+        Cursor cursor = db.query(TABLE_TARGET_TYPE, null, "name=?", new String[]{targetType}, null, null, null);
+        if(cursor.moveToFirst()){
+            id_type = cursor.getLong(0);
+        }else{ // Название не найдено в списке типов Целей, добавляем новый тип целей
+            id_type = addTargetType(targetType);
+        }
+
+        // -- Добавляем или обновляем Цель
+        //TODO: сохранить поле id_jour
+        ContentValues values = new ContentValues();
+        values.put("id_type", id_type);
+        values.put("count", target.getCount());
+        values.put("id_jour", target.getId_jour());
+        if(target.getId()<0){// Новый, не сохранённый ранее объект, тогда добавляем новую запись в таблицу
+            result = db.insert(TABLE_TARGET, null, values);
+        }else { // Объект уже существует, есть идентификатор, тогда обновляем запись
+            values.put("id", target.getId());
+            result = db.update(TABLE_TARGET, values, "id=?", new String[]{String.valueOf(target.getId())});
+        }
+        return result;
+    }
+
+    public long addTargetType(String targetType){
+        long result = -1;
+        ContentValues values = new ContentValues();
+        values.put("name", targetType);
+        result = db.insert(TABLE_TARGET_TYPE, null, values);
         return result;
     }
 
